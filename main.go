@@ -27,7 +27,7 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:    "status",
-			Aliases: []string{"a"},
+			Aliases: []string{"s"},
 			Usage:   "general status",
 			Action: func(c *cli.Context) error {
 				fmt.Println("Generate status")
@@ -49,7 +49,7 @@ func main() {
 		},
 		{
 			Name:    "today",
-			Aliases: []string{"a"},
+			Aliases: []string{"t"},
 			Usage:   "get today's notes",
 			Action: func(c *cli.Context) error {
 				notes, err := fs.GetNotes()
@@ -57,7 +57,11 @@ func main() {
 					return err
 				}
 
-				fmt.Println("Today's notes %s", notes)
+				if notes == "" {
+					fmt.Println("No notes for today")
+				} else {
+					fmt.Println(notes)
+				}
 				return nil
 			},
 		},
@@ -74,13 +78,18 @@ type NoteService struct {
 }
 
 func (n *NoteService) GetActiveFile() (*os.File, error) {
-	today := time.Now()
-	file_name := today.Format("2024-02-14") + ".txt"
-	file, err := os.OpenFile(n.directory_path+file_name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file_path := n.getFilePath()
+	file, err := os.OpenFile(file_path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 	return file, nil
+}
+
+func (n *NoteService) getFilePath() string {
+	today := time.Now()
+	file_name := today.Format("01-02-2006") + ".txt"
+	return n.directory_path + file_name
 }
 
 func (n *NoteService) AddNote(note string) error {
@@ -98,10 +107,13 @@ func (n *NoteService) AddNote(note string) error {
 }
 
 func (n *NoteService) GetNotes() (string, error) {
-	filename := time.Now().Format("2006-01-02") + ".txt"
-	file, err := os.ReadFile(n.directory_path + filename)
+	file_path := n.getFilePath()
+
+	content, err := os.ReadFile(file_path)
+
 	if err != nil {
 		return "", err
 	}
-	return string(file), nil
+
+	return string(content), nil
 }
