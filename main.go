@@ -13,6 +13,9 @@ import (
 func main() {
 	app := cli.NewApp()
 
+	app.Name = "tm"
+	app.Usage = "A simple notes app for the terminal"
+
 	ex, err := os.Executable()
 	if err != nil {
 		panic(err)
