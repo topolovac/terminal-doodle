@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"time"
 
 	"github.com/urfave/cli"
@@ -17,15 +16,12 @@ func main() {
 	app.Name = "tm"
 	app.Usage = "A simple notes app for the terminal"
 
-	ex, err := os.Executable()
+	hd, err := os.UserHomeDir()
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
-	exPath := filepath.Dir(ex)
-	fmt.Println(exPath)
-
 	fs := &NoteService{
-		directory_path: "./notes/",
+		directory_path: hd + "/terminal-doodle",
 	}
 
 	app.Commands = []cli.Command{
@@ -34,7 +30,8 @@ func main() {
 			Aliases: []string{"s"},
 			Usage:   "general status",
 			Action: func(c *cli.Context) error {
-				fmt.Println("Generate status")
+				path := fs.getFilePath()
+				fmt.Println("File path: ", path)
 				return nil
 			},
 		},
@@ -44,10 +41,13 @@ func main() {
 			Usage:   "add a note",
 			Action: func(c *cli.Context) error {
 				note := c.Args().First()
-				for i := 0; i < c.NArg(); i++ {
+				for i := 1; i < c.NArg(); i++ {
 					note += " " + c.Args().Get(i)
 				}
-				fs.AddNote(note)
+				err := fs.AddNote(note)
+				if err != nil {
+					return err
+				}
 				return nil
 			},
 		},
@@ -117,9 +117,17 @@ func (n *NoteService) GetActiveFile() (*os.File, error) {
 }
 
 func (n *NoteService) getFilePath() string {
+	if _, err := os.Stat(n.directory_path); os.IsNotExist(err) {
+		err := os.MkdirAll(n.directory_path, 0755)
+		if err != nil {
+			log.Panic(err)
+		}
+		fmt.Println("Directory created")
+	}
+
 	today := time.Now()
 	file_name := today.Format("01-02-2006") + ".txt"
-	return n.directory_path + file_name
+	return n.directory_path + "/" + file_name
 }
 
 func (n *NoteService) AddNote(note string) error {
