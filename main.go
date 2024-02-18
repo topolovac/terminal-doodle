@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -65,6 +66,32 @@ func main() {
 				} else {
 					fmt.Println(notes)
 				}
+				return nil
+			},
+		},
+		{
+			Name:  "nano",
+			Usage: "open today's notes in nano",
+			Action: func(c *cli.Context) error {
+				file_path := fs.getFilePath()
+				cmd := exec.Command("nano", file_path)
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				cmd.Run()
+				return nil
+			},
+		},
+		{
+			Name:  "vim",
+			Usage: "open today's notes in vim",
+			Action: func(c *cli.Context) error {
+				file_path := fs.getFilePath()
+				cmd := exec.Command("vim", file_path)
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				cmd.Run()
 				return nil
 			},
 		},
