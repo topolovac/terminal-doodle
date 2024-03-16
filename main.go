@@ -49,6 +49,7 @@ func main() {
 				if err != nil {
 					return err
 				}
+				fmt.Println("Note added successfully")
 				return nil
 			},
 		},
@@ -129,6 +130,7 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
+				fmt.Println("Opened in default text editor")
 				return nil
 			},
 		},
