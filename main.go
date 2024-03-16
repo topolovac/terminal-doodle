@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"time"
 
 	"github.com/urfave/cli"
@@ -70,28 +71,64 @@ func main() {
 			},
 		},
 		{
-			Name:  "nano",
-			Usage: "open today's notes in nano",
+			Name:    "nano",
+			Aliases: []string{"n"},
+			Usage:   "open today's notes in nano",
 			Action: func(c *cli.Context) error {
 				file_path := fs.getFilePath()
 				cmd := exec.Command("nano", file_path)
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				cmd.Run()
+				err := cmd.Run()
+				if err != nil {
+					log.Fatal(err)
+				}
 				return nil
 			},
 		},
 		{
-			Name:  "vim",
-			Usage: "open today's notes in vim",
+			Name:    "vim",
+			Aliases: []string{"v"},
+			Usage:   "open today's notes in vim",
 			Action: func(c *cli.Context) error {
 				file_path := fs.getFilePath()
 				cmd := exec.Command("vim", file_path)
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				cmd.Run()
+				err := cmd.Run()
+				if err != nil {
+					log.Fatal(err)
+				}
+				return nil
+			},
+		},
+		{
+			Name:    "editor",
+			Aliases: []string{"e"},
+			Usage:   "open today's notes in default text editor",
+			Action: func(c *cli.Context) error {
+				file_path := fs.getFilePath()
+				fmt.Println(file_path)
+				var cmd *exec.Cmd
+				switch runtime.GOOS {
+				case "windows":
+					cmd = exec.Command("start", file_path)
+				case "darwin":
+					cmd = exec.Command("open", "-t", file_path)
+				case "linux":
+					cmd = exec.Command("xdg-open", file_path)
+				default:
+					log.Fatalf("Unsupported OS: %s", runtime.GOOS)
+				}
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				err := cmd.Run()
+				if err != nil {
+					log.Fatal(err)
+				}
 				return nil
 			},
 		},
